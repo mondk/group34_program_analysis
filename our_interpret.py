@@ -24,6 +24,7 @@ method_name = info['method_name']
 
 def parser(file_path, method_name):
     bytecode =[]
+    max_locals =0
     with open(file_path, 'r') as file:
         java_code = file.read()
         json_obj = json.loads(java_code)
@@ -31,17 +32,15 @@ def parser(file_path, method_name):
             if i['name'] == method_name:
                 for c in i['code']['bytecode']:
                     bytecode.append(c)
+                max_locals=i['code']['max_locals']
                 break
     if len(bytecode) ==0:
         print('Error no bytecode for: ',method_name)
-    return bytecode
+    return bytecode,max_locals
    
 
-bytecode = parser(file_path, method_name)
+bytecode,max_locals = parser(file_path, method_name)
 
-for i in bytecode:
-    print()
-    print(i)
 
 class OurInterpreter:
     bytecode:list
@@ -51,8 +50,15 @@ class OurInterpreter:
     pc:int
     done: Optional[str] = None
 
+    def __init__(self, bytecode, max_local):
+        self.bytecode = bytecode
+        self.max_local = max_local
+        self.pc = 0
+        self.local = [None] * self.max_local
+        self.stack = []  
+
     def interpret(self):
-        self.local = [None]*self.max_local
+        
         for i in range(len(bytecode)):
             next = self.bytecode[self.pc]
 
@@ -104,7 +110,7 @@ class OurInterpreter:
         self.stack.append(bc['static'])
         self.pc +=1
     def step_new(self,bc):
-        new_obj = {'class':bc['class']}
+        new_obj = AssertionError()
         self.stack.append(new_obj)
         self.pc+=1
     def step_dup(self,bc):
@@ -114,8 +120,16 @@ class OurInterpreter:
         self.pc+=1
     def step_invoke(self,bc):
         obj = self.stack.pop()
+        obj.__init__()
 
-        if obj['class'] 
+    def step_throw(self,bc):
+        exception = self.stack.pop()
+
+        if isinstance(exception, AssertionError):
+            self.done = 'Assertion error'
+        else:
+            self.pc+=1
+        
 
     def step_return(self, bc):
         if bc["type"] is not None:
@@ -123,3 +137,8 @@ class OurInterpreter:
         self.done = "ok"
 
     
+interpreter = OurInterpreter(bytecode,max_locals)
+
+result = interpreter.interpret()
+
+print(result)
