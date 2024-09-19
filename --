@@ -1,0 +1,18 @@
+wm> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayContent:()V' '()'
+wm> decompiled/jpamb/cases/Arrays.json
+wm> done
+4l> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayInBounds:()V' '()'
+4l> decompiled/jpamb/cases/Arrays.json
+4l> done
+0x> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayIsNull:()V' '()'
+0x> decompiled/jpamb/cases/Arrays.json
+0x> Traceback (most recent call last):
+0x>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 206, in <module>
+0x>     result = interpreter.interpret()
+0x>              ^^^^^^^^^^^^^^^^^^^^^^^
+0x>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 68, in interpret
+0x>     fn(next)
+0x>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 77, in step_push
+0x>     self.stack.append(bc['value']['value'])
+0x>                       ~~~~~~~~~~~^^^^^^^^^
+0x> TypeError: 'NoneType' object is not subscriptable

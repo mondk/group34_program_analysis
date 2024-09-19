@@ -61,7 +61,7 @@ class OurInterpreter:
 
     def interpret(self):
         
-        while self.pc <=len(bytecode):
+        while self.pc <len(bytecode):
             next = self.bytecode[self.pc]
 
             if fn := getattr(self, "step_" + next["opr"], None):
@@ -132,11 +132,73 @@ class OurInterpreter:
         else:
             self.pc+=1
     
+    def step_binary(self,bc):
+        bin_type = bc['type']
+        a = self.stack.pop()
+        b = self.stack.pop()
+        res:int
+        if bin_type =='add':
+            res = a+b
+        elif bin_type == 'sub':
+            res = a-b
+        elif bin_type == 'div':
+            res= a/b
+        elif bin_type == 'mul':
+            res=a*b
+        elif bin_type == 'rem':
+            res = a%b
+        self.stack.append(res)
+        self.pc+=1
 
+    #maybe
+    def step_put(self,bc):
+        self.stack.append(bc['static'])
+        self.pc+=1
+        
+    def step_if(self,bc):
+        value1 = self.stack.pop()
+        value2 = self.stack.pop()
+        condition = bc['condition']
+        jump= False
+        if condition =='eq':
+            jump = value1==value2
+        elif condition =='ne':
+            jump = value1!=value2
+        elif condition =='gt':
+            jump = value1>value2
+        elif condition =='ge':
+            jump = value1>=value2
+        elif condition == 'lt':
+            jump = value1 < value2
+        elif condition == 'le':
+            jump = value1 <= value2
+        if jump:
+            self.pc=bc['target']
+        else:
+            self.pc+=1
+    
+    def step_incr(self,bc):
+        index = bc['index']
+        self.local[index]+=bc['amount']
+        self.pc+=1
+
+    
+    def newarray(self,bc):
+        dim = bc['dim']
+        self.stack.append([]*dim)
+        self.pc+=1
+    
+    def array_store(self,bc):
+        type = bc['type']
+    
+    def array_load(self,bc):
+        return None
+    
+    
     def step_return(self, bc):
         if bc["type"] is not None:
             self.stack.pop()
-        self.done = "ok;100%"
+        self.done = "ok"
 
     
 interpreter = OurInterpreter(bytecode,max_locals)
