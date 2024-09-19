@@ -1,13 +1,15 @@
 import re
 from pathlib import Path
 #!/usr/bin/env python3
-import sys
+import sys, logging
 import json
 from typing import Optional
-
+l = logging
+l.basicConfig(level=logging.DEBUG, format="%(message)s")
 # ignored for now
-call = 'jpamb.cases.Simple.assertInteger:(I)V'
+call = sys.argv[1].replace("'", "")
 
+#'jpamb.cases.Simple.justReturn:()I'
 regex = re.compile(r"(?P<class_name>.+)\.(?P<method_name>.*)\:\((?P<params>.*)\)(?P<return>.*)")
 
 
@@ -21,7 +23,7 @@ file_path = Path("decompiled")/class_name
 file_path=str(file_path).replace('\\','/')
 method_name = info['method_name']
 
-
+l.debug(file_path)
 def parser(file_path, method_name):
     bytecode =[]
     max_locals =0
@@ -59,7 +61,7 @@ class OurInterpreter:
 
     def interpret(self):
         
-        for i in range(len(bytecode)):
+        while self.pc <=len(bytecode):
             next = self.bytecode[self.pc]
 
             if fn := getattr(self, "step_" + next["opr"], None):
@@ -129,12 +131,12 @@ class OurInterpreter:
             self.done = 'Assertion error'
         else:
             self.pc+=1
-        
+    
 
     def step_return(self, bc):
         if bc["type"] is not None:
             self.stack.pop()
-        self.done = "ok"
+        self.done = "ok;100%"
 
     
 interpreter = OurInterpreter(bytecode,max_locals)
