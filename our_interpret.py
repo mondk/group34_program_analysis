@@ -57,10 +57,19 @@ class OurInterpreter:
         self.max_local = max_local
         self.pc = 0
         self.local = [None] * self.max_local
-        self.stack = []  
+        self.stack = []
+        self.locals = list
+          
 
-    def interpret(self):
-        
+    def interpret(self, limit=10):
+        for i in range(limit):
+            next = self.bytecode[self.pc]
+            l.debug(f"STEP {i}:")
+            l.debug(f"  PC: {self.pc} {next}")
+            l.debug(f"  LOCALS: {self.locals}")
+            l.debug(f"  STACK: {self.stack}")
+
+
         while self.pc <len(bytecode):
             next = self.bytecode[self.pc]
 
@@ -72,10 +81,12 @@ class OurInterpreter:
                 return self.done
         return 'out of time'
             
-    
+    #works
     def step_push(self,bc):
-        self.stack.append(bc['value']['value'])
+        self.stack.insert(0, bc["value"]["value"])
         self.pc+=1
+
+    #works
     def step_load(self,bc):
         value = self.local[bc['index']]
         self.stack.append(value)
@@ -108,9 +119,11 @@ class OurInterpreter:
     def step_goto(self,bc):
         self.pc = bc['target']
     
+    #catch an assertion error? - otherwise seems to work
     def step_get(self,bc):
         self.stack.append(bc['static'])
         self.pc +=1
+
     def step_new(self,bc):
         new_obj = AssertionError()
         self.stack.append(new_obj)
@@ -133,9 +146,13 @@ class OurInterpreter:
             self.pc+=1
     
     def step_binary(self,bc):
-        bin_type = bc['type']
-        a = self.stack.pop()
-        b = self.stack.pop()
+        bin_type = bc['operant']
+        l.debug("size of stack %s", len(self.stack))
+        l.debug("what's in the stack %s", self.stack)
+        a = self.stack.pop(0)
+        b = self.stack.pop(0)
+        l.debug("a: %s", a)
+        l.debug("b: %s", b)
         res:int
         if bin_type =='add':
             res = a+b
@@ -147,9 +164,11 @@ class OurInterpreter:
             res=a*b
         elif bin_type == 'rem':
             res = a%b
+        else:
+            raise ValueError(f"Invalid operation type: {bin_type}")
         self.stack.append(res)
         self.pc+=1
-
+        
     #maybe
     def step_put(self,bc):
         self.stack.append(bc['static'])
@@ -188,11 +207,12 @@ class OurInterpreter:
         self.stack.append([]*dim)
         self.pc+=1
     
-    def array_store(self,bc):
-        type = bc['type']
+#    def array_store(self,bc):
+ #       return None
     
-    def array_load(self,bc):
-        return None
+    
+ #   def array_load(self,bc):
+ #       return 
     
     
     def step_return(self, bc):
@@ -206,3 +226,6 @@ interpreter = OurInterpreter(bytecode,max_locals)
 result = interpreter.interpret()
 
 print(result)
+
+
+
