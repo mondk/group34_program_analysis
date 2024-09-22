@@ -56,12 +56,12 @@ class OurInterpreter:
         self.bytecode = bytecode
         self.max_local = max_local
         self.pc = 0
-        self.local = [None] * self.max_local
+        self.local = [0] * self.max_local
         self.stack = []
         self.locals = list
           
 
-    def interpret(self, limit=10):
+    def interpret(self, limit=20):
         for i in range(limit):
             next = self.bytecode[self.pc]
             l.debug(f"STEP {i}:")
@@ -88,9 +88,13 @@ class OurInterpreter:
 
     #works
     def step_load(self,bc):
+        if self.local[bc['index']] is None:
+            raise ValueError(f"Uninitialized local variable at index {bc['index']}")
         value = self.local[bc['index']]
         self.stack.append(value)
-        self.pc+=1
+        self.pc += 1
+
+        
     def step_store(self,bc):
         value = self.stack.pop()
         self.local[bc['index']] = value
@@ -134,8 +138,11 @@ class OurInterpreter:
         self.stack.append(value)
         self.pc+=1
     def step_invoke(self,bc):
+        if len(self.stack) < 1:
+            raise ValueError("Cannot pop from an empty stack in step_invoke")
         obj = self.stack.pop()
         obj.__init__()
+        self.pc += 1
 
     def step_throw(self,bc):
         exception = self.stack.pop()
@@ -147,10 +154,13 @@ class OurInterpreter:
     
     def step_binary(self,bc):
         bin_type = bc['operant']
+        l.debug("operand %s", bin_type)
         l.debug("size of stack %s", len(self.stack))
         l.debug("what's in the stack %s", self.stack)
-        a = self.stack.pop(0)
-        b = self.stack.pop(0)
+        if len(self.stack) < 2:
+            raise ValueError("Insufficient values on the stack for binary operation")
+        a = self.stack.pop()
+        b = self.stack.pop()
         l.debug("a: %s", a)
         l.debug("b: %s", b)
         res:int
@@ -159,7 +169,10 @@ class OurInterpreter:
         elif bin_type == 'sub':
             res = a-b
         elif bin_type == 'div':
-            res= a/b
+            if  b != 0:
+                res= a/b
+            else:
+                raise ZeroDivisionError
         elif bin_type == 'mul':
             res=a*b
         elif bin_type == 'rem':
@@ -167,6 +180,7 @@ class OurInterpreter:
         else:
             raise ValueError(f"Invalid operation type: {bin_type}")
         self.stack.append(res)
+        l.debug("what's in the stack %s", self.stack)
         self.pc+=1
         
     #maybe
@@ -201,6 +215,29 @@ class OurInterpreter:
         self.local[index]+=bc['amount']
         self.pc+=1
 
+    def step_cast(self,bc):
+        if len(self.stack) == 0:
+            raise ValueError("Cannot pop from an empty stack in step_cast")
+
+        value = self.stack.pop()
+    
+        from_type = bc["from"]  
+        l.debug("from type %s", from_type)
+        to_type = bc["to"]   
+        l.debug("to type %s", to_type)
+
+        if from_type == "int":
+            if to_type == "byte":
+                casted_value = (value & 0xFF).to_bytes(1, 'big')  
+            elif to_type == "char":
+                casted_value = chr(value & 0xFFFF)  
+            elif to_type == "short":
+                l.debug("from type %s", from_type)
+                casted_value = (value).to_bytes(2, 'big', signed=True)
+        else:
+            raise ValueError(f"Invalid cast from int to {to_type}")
+        self.stack.append(casted_value)
+        self.pc += 1
     
     def newarray(self,bc):
         dim = bc['dim']
