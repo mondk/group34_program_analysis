@@ -30,10 +30,16 @@ method_name = info['method_name']
 #l.debug(sys.argv)
 def parse_param(s:str):
 
+    if s == '()':
+        return []
     # Handle boolean case
     if s== "'(true)'":
         return [True]
     elif s == "'(false)'":
+        return [False]
+    if s== '(true)':
+        return [True]
+    elif s == '(false)':
         return [False]
     
     # Handle list of integers case
@@ -261,10 +267,13 @@ class OurInterpreter:
             res = a-b
         elif bin_type == 'div':
            
-            if b ==0 or a==0:
+            if a==0:
                 self.done ='divide by zero'
             else:
-                res= a/b
+                if b==0:
+                    res =0
+                else:
+                    res= a/b
         elif bin_type == 'mul':
             res=a*b
         elif bin_type == 'rem':
