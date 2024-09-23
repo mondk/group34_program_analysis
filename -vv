@@ -1,0 +1,182 @@
+wm> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayContent:()V' '()'
+wm> ()
+wm> None
+wm> Traceback (most recent call last):
+wm>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+wm>     param = parse_param(param_str)
+wm>             ^^^^^^^^^^^^^^^^^^^^^^
+wm>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+wm>     raise ValueError("Input string does not match expected format")
+wm> ValueError: Input string does not match expected format
+4l> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayInBounds:()V' '()'
+4l> ()
+4l> None
+4l> Traceback (most recent call last):
+4l>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+4l>     param = parse_param(param_str)
+4l>             ^^^^^^^^^^^^^^^^^^^^^^
+4l>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+4l>     raise ValueError("Input string does not match expected format")
+4l> ValueError: Input string does not match expected format
+0x> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayIsNull:()V' '()'
+0x> ()
+0x> None
+0x> Traceback (most recent call last):
+0x>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+0x>     param = parse_param(param_str)
+0x>             ^^^^^^^^^^^^^^^^^^^^^^
+0x>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+0x>     raise ValueError("Input string does not match expected format")
+0x> ValueError: Input string does not match expected format
+lx> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayIsNullLength:()V' '()'
+lx> ()
+lx> None
+lx> Traceback (most recent call last):
+lx>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+lx>     param = parse_param(param_str)
+lx>             ^^^^^^^^^^^^^^^^^^^^^^
+lx>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+lx>     raise ValueError("Input string does not match expected format")
+lx> ValueError: Input string does not match expected format
+sK> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayLength:()V' '()'
+sK> ()
+sK> None
+sK> Traceback (most recent call last):
+sK>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+sK>     param = parse_param(param_str)
+sK>             ^^^^^^^^^^^^^^^^^^^^^^
+sK>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+sK>     raise ValueError("Input string does not match expected format")
+sK> ValueError: Input string does not match expected format
+j9> starting: python our_interpret.py 'jpamb.cases.Arrays.arrayOutOfBounds:()V' '()'
+j9> ()
+j9> None
+j9> Traceback (most recent call last):
+j9>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+j9>     param = parse_param(param_str)
+j9>             ^^^^^^^^^^^^^^^^^^^^^^
+j9>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+j9>     raise ValueError("Input string does not match expected format")
+j9> ValueError: Input string does not match expected format
+yX> starting: python our_interpret.py 'jpamb.cases.Arrays.arraySometimesNull:(I)V' '(0)'
+yX> (0)
+yX> <re.Match object; span=(0, 3), match='(0)'>
+yX> push
+yX> []
+yX> Traceback (most recent call last):
+yX>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 328, in <module>
+yX>     result = interpreter.interpret()
+yX>              ^^^^^^^^^^^^^^^^^^^^^^^
+yX>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 121, in interpret
+yX>     fn(next)
+yX>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 139, in step_push
+yX>     self.stack.append(bc['value']['value'])
+yX>                       ~~~~~~~~~~~^^^^^^^^^
+yX> TypeError: 'NoneType' object is not subscriptable
+9D> starting: python our_interpret.py 'jpamb.cases.Arrays.arraySometimesNull:(I)V' '(11)'
+9D> (11)
+9D> <re.Match object; span=(0, 4), match='(11)'>
+9D> push
+9D> []
+9D> Traceback (most recent call last):
+9D>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 328, in <module>
+9D>     result = interpreter.interpret()
+9D>              ^^^^^^^^^^^^^^^^^^^^^^^
+9D>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 121, in interpret
+9D>     fn(next)
+9D>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 139, in step_push
+9D>     self.stack.append(bc['value']['value'])
+9D>                       ~~~~~~~~~~~^^^^^^^^^
+9D> TypeError: 'NoneType' object is not subscriptable
+zm> starting: python our_interpret.py 'jpamb.cases.Arrays.binarySearch:(I)V' '(3)'
+zm> (3)
+zm> <re.Match object; span=(0, 3), match='(3)'>
+zm> push
+zm> []
+zm> newarray
+zm> [5]
+zm> done
+b5> starting: python our_interpret.py 'jpamb.cases.Arrays.binarySearch:(I)V' '(6)'
+b5> (6)
+b5> <re.Match object; span=(0, 3), match='(6)'>
+b5> push
+b5> []
+b5> newarray
+b5> [5]
+b5> done
+nC> starting: python our_interpret.py 'jpamb.cases.Calls.allPrimesArePositive:(I)V' '(100)'
+nC> (100)
+nC> <re.Match object; span=(0, 5), match='(100)'>
+nC> load
+nC> []
+nC> invoke
+nC> [100]
+nC> store
+nC> [100]
+nC> load
+nC> []
+nC> arraylength
+nC> [100]
+nC> done
+fo> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertFalse:()V' '()'
+fo> ()
+fo> None
+fo> Traceback (most recent call last):
+fo>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+fo>     param = parse_param(param_str)
+fo>             ^^^^^^^^^^^^^^^^^^^^^^
+fo>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+fo>     raise ValueError("Input string does not match expected format")
+fo> ValueError: Input string does not match expected format
+bG> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertFib:(I)V' '(0)'
+bG> (0)
+bG> <re.Match object; span=(0, 3), match='(0)'>
+bG> get
+bG> []
+bG> ifz
+bG> [True]
+bG> True
+bG> return
+bG> []
+bG> done
+Q5> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertFib:(I)V' '(8)'
+Q5> (8)
+Q5> <re.Match object; span=(0, 3), match='(8)'>
+Q5> get
+Q5> []
+Q5> ifz
+Q5> [True]
+Q5> True
+Q5> return
+Q5> []
+Q5> done
+uf> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertIf:(Z)V' '(false)'
+uf> (false)
+uf> None
+uf> Traceback (most recent call last):
+uf>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+uf>     param = parse_param(param_str)
+uf>             ^^^^^^^^^^^^^^^^^^^^^^
+uf>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+uf>     raise ValueError("Input string does not match expected format")
+uf> ValueError: Input string does not match expected format
+DW> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertIf:(Z)V' '(true)'
+DW> (true)
+DW> None
+DW> Traceback (most recent call last):
+DW>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+DW>     param = parse_param(param_str)
+DW>             ^^^^^^^^^^^^^^^^^^^^^^
+DW>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+DW>     raise ValueError("Input string does not match expected format")
+DW> ValueError: Input string does not match expected format
+az> starting: python our_interpret.py 'jpamb.cases.Calls.callsAssertIfWithTrue:()V' '()'
+az> ()
+az> None
+az> Traceback (most recent call last):
+az>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 72, in <module>
+az>     param = parse_param(param_str)
+az>             ^^^^^^^^^^^^^^^^^^^^^^
+az>   File "C:\Users\Mondk\Documents\GitHub\group34_program_analysis\our_interpret.py", line 46, in parse_param
+az>     raise ValueError("Input string does not match expected format")
+az> ValueError: Input string does not match expected format

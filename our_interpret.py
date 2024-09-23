@@ -3,11 +3,14 @@ from pathlib import Path
 #!/usr/bin/env python3
 import sys, logging
 import json
-from typing import Optional
+from typing import Optional, TypeAlias, Literal
 l = logging
 l.basicConfig(level=logging.DEBUG, format="%(message)s")
 # ignored for now
 call = sys.argv[1].replace("'", "")
+
+
+
 
 #'jpamb.cases.Simple.justReturn:()I'
 regex = re.compile(r"(?P<class_name>.+)\.(?P<method_name>.*)\:\((?P<params>.*)\)(?P<return>.*)")
@@ -23,7 +26,25 @@ file_path = Path("decompiled")/class_name
 file_path=str(file_path).replace('\\','/')
 method_name = info['method_name']
 
-l.debug(file_path)
+#l.debug(file_path)
+#l.debug(sys.argv)
+def parse_param(s:str):
+
+    # Handle boolean case
+    if s== "'(true)'":
+        return [True]
+    elif s == "'(false)'":
+        return [False]
+    
+    # Handle list of integers case
+    match = re.search(r'\((-?\d+(?:,\s*-?\d+)*)\)', s)
+    l.debug(match)
+    if match:
+        # Split by commas and convert to integers
+        return [int(x) for x in match.group(1).split(',')]
+    l.debug(s)
+    raise ValueError("Input string does not match expected format")
+
 def parser(file_path, method_name):
     bytecode =[]
     max_locals =0
@@ -42,7 +63,17 @@ def parser(file_path, method_name):
    
 
 bytecode,max_locals = parser(file_path, method_name)
+JvmType: TypeAlias= Literal["boolean"] | Literal["int"]
 
+test = str(sys.argv[2])
+if  test=="'()'":
+    l.debug('okll')
+    param =[]
+else:
+    param_str = ' '.join(sys.argv[2:]).strip()
+    l.debug('hmm')
+    l.debug(param_str)
+    param = parse_param(param_str)
 
 class OurInterpreter:
     bytecode:list
@@ -51,25 +82,60 @@ class OurInterpreter:
     stack:list
     pc:int
     done: Optional[str] = None
+    time:int
+    state_mem:dict 
 
-    def __init__(self, bytecode, max_local):
+    def __init__(self, bytecode, max_local,param):
         self.bytecode = bytecode
         self.max_local = max_local
         self.pc = 0
         self.local = [None] * self.max_local
-        self.stack = []  
+        self.stack = [] 
+        self.time = 1000
+        self.state_mem ={}
+        if type(param)==list:
+            
+            for i in range(0,len(param)):
+                self.local[i] = param[i]
+                
+        else:
+            self.local=param
 
     def interpret(self):
         
-        while self.pc <len(bytecode):
+        for i in range(self.time):
             next = self.bytecode[self.pc]
-
+            
+            if self.pc in self.state_mem:
+                for d in self.state_mem[self.pc]:
+                    if d['local'] == self.local and d['stack'] == self.stack:
+                        if d['count'] > 10:
+                            return '*'
+                        else:
+                            d['count']+=1
+                
+            l.debug(next['opr'])
+            #l.debug(self.pc)
+            #l.debug(self.local)
+            l.debug(self.stack)
+            
+            if self.done:
+                return self.done
             if fn := getattr(self, "step_" + next["opr"], None):
                     fn(next)
+                    
+                    if self.pc in self.state_mem:
+                         for d in self.state_mem[self.pc]:
+                            if d['local'] == self.local and d['stack'] == self.stack:
+                                    d['count']+=1
+                    else:
+                        self.state_mem[self.pc] = [{'local':self.local,'stack':self.stack,'count':0}]
+                        
             else:
                 return f"can't handle {next['opr']!r}"
             if self.done:
                 return self.done
+            
         return 'out of time'
             
     
@@ -87,6 +153,12 @@ class OurInterpreter:
     def step_ifz(self,bc):
         value = self.stack.pop()
         condition = bc['condition']
+        l.debug(value)
+        if type(value)==bool:
+            if value:
+                value =1
+            else:
+                value =0
         jump= False
         if condition =='eq':
             jump = value==0
@@ -108,11 +180,40 @@ class OurInterpreter:
     def step_goto(self,bc):
         self.pc = bc['target']
     
+    def step_cast(self, bc):
+
+        cast_type = bc['to']
+        value = self.stack.pop()
+        new_value:None
+        if cast_type =='short':
+            new_value = self.int_to_short(value)
+        if cast_type == 'byte':
+            new_value = self.int_to_byte(value)
+        if cast_type == 'char':
+            new_value = chr(value)
+        self.stack.append(new_value)
+        self.pc+=1
+    @staticmethod 
+    def int_to_short(value):
+        # Apply a mask to simulate 16-bit signed integer range (-32768 to 32767)
+            short_value = (value & 0xFFFF)
+            if short_value >= 0x8000:  # If the value exceeds 32767
+                short_value -= 0x10000  # Convert to negative (two's complement)
+            return short_value
+    @staticmethod
+    def int_to_byte(value):
+        # Apply a mask to simulate 8-bit signed integer range (-128 to 127)
+            byte_value = (value & 0xFF)
+            if byte_value >= 0x80:  # If the value exceeds 127
+                byte_value -= 0x100  # Convert to negative (two's complement)
+            return byte_value
+        
+
     def step_get(self,bc):
-        self.stack.append(bc['static'])
+        self.stack.append(False)
         self.pc +=1
     def step_new(self,bc):
-        new_obj = AssertionError()
+        new_obj = AssertionError('assertion error')
         self.stack.append(new_obj)
         self.pc+=1
     def step_dup(self,bc):
@@ -120,29 +221,50 @@ class OurInterpreter:
         self.stack.append(value)
         self.stack.append(value)
         self.pc+=1
-    def step_invoke(self,bc):
-        obj = self.stack.pop()
-        obj.__init__()
+    def step_invoke(self, bc):
+        
+        method_info = bc['method']
+        method_name = method_info['name'] # e.g., "assertIf"
+        
+        if method_name == 'assertIf':
+            obj = self.stack.pop()
+            try:
+                assert obj
+                
+            except:
+                self.done = 'assertion error'
+        elif method_name == 'assertFalse':
+            try:
+                assert False
+                
+            except:
+                self.done = 'assertion error'
+        
+        self.pc += 1
 
     def step_throw(self,bc):
+        #l.debug('nig')
         exception = self.stack.pop()
-
-        if isinstance(exception, AssertionError):
-            self.done = 'Assertion error'
-        else:
-            self.pc+=1
+        self.done = 'assertion error'
+        self.pc+=1
+        
     
     def step_binary(self,bc):
-        bin_type = bc['type']
+        bin_type = bc['operant']
         a = self.stack.pop()
         b = self.stack.pop()
-        res:int
+       
+        res=0
         if bin_type =='add':
             res = a+b
         elif bin_type == 'sub':
             res = a-b
         elif bin_type == 'div':
-            res= a/b
+           
+            if b ==0 or a==0:
+                self.done ='divide by zero'
+            else:
+                res= a/b
         elif bin_type == 'mul':
             res=a*b
         elif bin_type == 'rem':
@@ -152,7 +274,8 @@ class OurInterpreter:
 
     #maybe
     def step_put(self,bc):
-        self.stack.append(bc['static'])
+        value =self.stack.pop()
+        bc['static'] = value
         self.pc+=1
         
     def step_if(self,bc):
@@ -198,10 +321,12 @@ class OurInterpreter:
     def step_return(self, bc):
         if bc["type"] is not None:
             self.stack.pop()
-        self.done = "ok"
+        
+        if self.done == None:
+            self.done = "ok"
 
     
-interpreter = OurInterpreter(bytecode,max_locals)
+interpreter = OurInterpreter(bytecode,max_locals,param)
 
 result = interpreter.interpret()
 
