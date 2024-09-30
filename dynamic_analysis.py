@@ -4,8 +4,9 @@ import random
 
 l = logging
 l.basicConfig(level=logging.DEBUG, format="%(message)s") 
-
-bytecode, max_locals,param = MetodID(sys.argv).get_info()
+call = sys.argv
+l.debug(call)
+bytecode, max_locals, param = MetodID(call).get_info()
 
 
 
@@ -14,12 +15,12 @@ bool_values = [True, False]
 
 
 def make_child():
-    if type(param) == list:
+    if param == 'II':
             return [random.randint(*int_range), random.randint(*int_range)]
-    if type(param) == bool:
+    if param == 'Z':
         return random.choice(bool_values)
     else:
-        return [random.randint(*int_range)] 
+        return random.randint(*int_range) 
     
 l.debug(make_child())
 
@@ -27,4 +28,7 @@ interpreter = OurInterpreter(bytecode,max_locals,make_child())
 
 result = interpreter.interpret()
 
-print(result)
+if result =='ok':
+     print('ok;50%')
+else:
+     print(result+';100%')

@@ -36,16 +36,8 @@ class MetodID:
         method_name = info['method_name']
 
         self.parse_file(file_path,method_name)
-
-        test = str(self.call[2])
-        if  test=="'()'":
-            l.debug('okll')
-            self.param =[]
-        else:
-            param_str = ' '.join(self.call[2:]).strip()
-            l.debug('hmm')
-            l.debug(param_str)
-            self.param = self.parse_param(param_str)
+        self.param = info['params']
+        
 
     def parse_file(self,file_path, method_name):
         self.bytecode =[]
