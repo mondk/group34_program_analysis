@@ -7,79 +7,84 @@ from typing import Optional, TypeAlias, Literal
 l = logging
 l.basicConfig(level=logging.DEBUG, format="%(message)s")
 # ignored for now
-call = sys.argv[1].replace("'", "")
 
 
 
+class MetodID:
+    bytecode:list
+    max_local:int
+    param:None
+    call:str
 
-#'jpamb.cases.Simple.justReturn:()I'
-regex = re.compile(r"(?P<class_name>.+)\.(?P<method_name>.*)\:\((?P<params>.*)\)(?P<return>.*)")
+    def __init__(self,call):
+        self.call = call
 
+    def get_info(self):
+        self.parse_call()
+        return self.bytecode,self.max_local,self.param
+    def parse_call(self):
+        call = self.call[1].replace("'", "")
+        call=call.replace("'", "")
+        #'jpamb.cases.Simple.justReturn:()I'
+        regex = re.compile(r"(?P<class_name>.+)\.(?P<method_name>.*)\:\((?P<params>.*)\)(?P<return>.*)")
 
+        match = regex.search(call)
+        info = match.groupdict()
+        class_name = info['class_name'].replace(".","/")+(".json")
+        file_path = Path("decompiled")/class_name
+        file_path=str(file_path).replace('\\','/')
+        method_name = info['method_name']
 
-match = regex.search(call)
+        self.parse_file(file_path,method_name)
 
-info = match.groupdict()
+        test = str(self.call[2])
+        if  test=="'()'":
+            l.debug('okll')
+            self.param =[]
+        else:
+            param_str = ' '.join(self.call[2:]).strip()
+            l.debug('hmm')
+            l.debug(param_str)
+            self.param = self.parse_param(param_str)
 
-class_name = info['class_name'].replace(".","/")+(".json")
-file_path = Path("decompiled")/class_name
-file_path=str(file_path).replace('\\','/')
-method_name = info['method_name']
+    def parse_file(self,file_path, method_name):
+        self.bytecode =[]
+        max_locals =0
+        with open(file_path, 'r') as file:
+            java_code = file.read()
+            json_obj = json.loads(java_code)
+            for i in json_obj['methods']:
+                if i['name'] == method_name:
+                    for c in i['code']['bytecode']:
+                        self.bytecode.append(c)
+                    max_locals=i['code']['max_locals']
+                    break
+        if len(self.bytecode) ==0:
+            print('Error no bytecode for: ',method_name)
+        self.max_local=max_locals
+    def parse_param(self,s:str):
 
-#l.debug(file_path)
-#l.debug(sys.argv)
-def parse_param(s:str):
+        if s == '()':
+            return []
+        # Handle boolean case
+        if s== "'(true)'":
+            return [True]
+        elif s == "'(false)'":
+            return [False]
+        if s== '(true)':
+            return [True]
+        elif s == '(false)':
+            return [False]
+        
+        # Handle list of integers case
+        match = re.search(r'\((-?\d+(?:,\s*-?\d+)*)\)', s)
+        l.debug(match)
+        if match:
+            # Split by commas and convert to integers
+            return [int(x) for x in match.group(1).split(',')]
+        l.debug(s)
+        raise ValueError("Input string does not match expected format")
 
-    if s == '()':
-        return []
-    # Handle boolean case
-    if s== "'(true)'":
-        return [True]
-    elif s == "'(false)'":
-        return [False]
-    if s== '(true)':
-        return [True]
-    elif s == '(false)':
-        return [False]
-    
-    # Handle list of integers case
-    match = re.search(r'\((-?\d+(?:,\s*-?\d+)*)\)', s)
-    l.debug(match)
-    if match:
-        # Split by commas and convert to integers
-        return [int(x) for x in match.group(1).split(',')]
-    l.debug(s)
-    raise ValueError("Input string does not match expected format")
-
-def parser(file_path, method_name):
-    bytecode =[]
-    max_locals =0
-    with open(file_path, 'r') as file:
-        java_code = file.read()
-        json_obj = json.loads(java_code)
-        for i in json_obj['methods']:
-            if i['name'] == method_name:
-                for c in i['code']['bytecode']:
-                    bytecode.append(c)
-                max_locals=i['code']['max_locals']
-                break
-    if len(bytecode) ==0:
-        print('Error no bytecode for: ',method_name)
-    return bytecode,max_locals
-   
-
-bytecode,max_locals = parser(file_path, method_name)
-JvmType: TypeAlias= Literal["boolean"] | Literal["int"]
-
-test = str(sys.argv[2])
-if  test=="'()'":
-    l.debug('okll')
-    param =[]
-else:
-    param_str = ' '.join(sys.argv[2:]).strip()
-    l.debug('hmm')
-    l.debug(param_str)
-    param = parse_param(param_str)
 
 class OurInterpreter:
     bytecode:list
@@ -99,9 +104,11 @@ class OurInterpreter:
         self.stack = [] 
         self.time = 1000
         self.state_mem ={}
+        self.heap = []
         if type(param)==list:
-            
+            l.debug(param)
             for i in range(0,len(param)):
+                l.debug(max_local)
                 self.local[i] = param[i]
                 
         else:
@@ -146,7 +153,10 @@ class OurInterpreter:
             
     
     def step_push(self,bc):
-        self.stack.append(bc['value']['value'])
+        if bc['value'] is None:
+            self.stack.append(None)
+        else:
+            self.stack.append(bc['value']['value'])
         self.pc+=1
     def step_load(self,bc):
         value = self.local[bc['index']]
@@ -230,7 +240,7 @@ class OurInterpreter:
     def step_invoke(self, bc):
         
         method_info = bc['method']
-        method_name = method_info['name'] # e.g., "assertIf"
+        method_name = method_info['name']
         
         if method_name == 'assertIf':
             obj = self.stack.pop()
@@ -315,17 +325,40 @@ class OurInterpreter:
         self.pc+=1
 
     
-    def newarray(self,bc):
+    def step_newarray(self,bc):
         dim = bc['dim']
-        self.stack.append([]*dim)
+        self.heap.append([0]*(dim+1))
         self.pc+=1
     
-    def array_store(self,bc):
-        type = bc['type']
+    def step_array_store(self,bc):
+        index = self.stack.pop(0)
+        value = self.stack.pop(0)
+       
+        l.debug(index)
+        l.debug(value)
+        if self.heap ==[]:
+            self.done = 'null pointer'
+        else:
+            try:
+                self.heap[0][index] = value
+            except Exception:
+                l.debug(Exception.add_note)
+                self.done = 'out of bounds'
+        self.pc+=1
     
-    def array_load(self,bc):
-        return None
-    
+    def step_array_load(self,bc):
+        index = self.stack.pop()
+        value = self.heap[0][index]
+        self.stack.append(value)
+        self.pc+=1
+
+    def step_arraylength(self,bc):
+        if self.heap!=[]:
+            length = len(self.heap[0])
+            self.stack.append(length)
+            self.pc+=1
+        else:
+            self.done = 'null pointer'
     
     def step_return(self, bc):
         if bc["type"] is not None:
@@ -334,9 +367,3 @@ class OurInterpreter:
         if self.done == None:
             self.done = "ok"
 
-    
-interpreter = OurInterpreter(bytecode,max_locals,param)
-
-result = interpreter.interpret()
-
-print(result)
