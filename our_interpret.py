@@ -91,8 +91,10 @@ class OurInterpreter:
     def __init__(self, bytecode, max_local,param):
         self.bytecode = bytecode
         self.max_local = max_local
+        l.debug(max_local)
         self.pc = 0
-        self.local = [None] * self.max_local
+        self.local = [0] * max_local
+        l.debug(self.local)
         self.stack = [] 
         self.time = 1000
         self.state_mem ={}
@@ -103,8 +105,10 @@ class OurInterpreter:
                 l.debug(max_local)
                 self.local[i] = param[i]
                 
-        else:
+        elif max_local ==0:
             self.local=param
+        else:
+            self.local[0]=param
 
     def interpret(self):
         
@@ -156,6 +160,9 @@ class OurInterpreter:
         self.pc+=1
     def step_store(self,bc):
         value = self.stack.pop()
+        l.debug(bc['index'])
+        l.debug('local')
+        l.debug(self.local)
         self.local[bc['index']] = value
         self.pc+=1
     def step_ifz(self,bc):
