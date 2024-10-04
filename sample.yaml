@@ -29,6 +29,15 @@ tools:
     executable: 
       - python 
       - solutions/apriori.py
+  dynamic_analyisis:
+     technologies:
+      - statistical
+      - cheater
+      - python
+
+    executable: 
+      - python 
+      - dynamic_analysis.py
   
   cheater: 
     technologies:

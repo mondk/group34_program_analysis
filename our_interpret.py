@@ -338,11 +338,11 @@ class OurInterpreter:
         if self.heap ==[]:
             self.done = 'null pointer'
         else:
-            try:
-                self.heap[0][index] = value
-            except Exception:
-                l.debug(Exception.add_note)
-                self.done = 'out of bounds'
+            array = self.heap[0]
+            if index < 0 or index >= len(array):
+                self.done = 'out of bounds'  
+            else:
+                array[index] = value
         self.pc+=1
     
     def step_array_load(self,bc):
