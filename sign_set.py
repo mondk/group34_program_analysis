@@ -17,30 +17,31 @@ class SignSet:
         for sign in self.signs:
             if sign in other.signs:
                 intersection_signs.add(sign)
-        return SignSet(list(intersection_signs))
+        return SignSet(intersection_signs)
 
   
     def join(self, other: 'SignSet') -> 'SignSet':
         return SignSet(self.signs.union( other.signs))
     
-    def abstract(self,items: set[int]):
-        self.signs=set()
+    @staticmethod
+    def abstract(items: set[int]):
+        signs=set()
  
         for i in items:
             if i ==0:
-                self.signs.add(Literal["0"])
+                signs.add("0")
             elif i>0:
-                self.signs.add(Literal["+"])
+                signs.add("+")
             else:
-                self.signs.add(Literal["-"])
-        return self.signs
+                signs.add("-")
+        return SignSet(signs)
     
     def __str__(self):
         return str(self.signs)
 
     
-set1 = SignSet(set(["0"]))
-set2 = SignSet(set(["0", "-"]))
+set1 = SignSet.abstract(set([1,0]))
+set2 = SignSet.abstract(set([-4,1]))
 
 # is subset
 print('Is subet:', set1.__le__(set2))
